@@ -1,83 +1,106 @@
 import './css/styles.css';
-import debounce from 'lodash.debounce';
+import axios from 'axios';
 import Notiflix from 'notiflix';
-import fetchCountries from './fetchCountries';
-
-const DEBOUNCE_DELAY = 300;
+import fatchImages from './fetchImages';
 
 const refs = {
-  input: document.querySelector('#search-box'),
-  countryList: document.querySelector('.country-list'),
-  countryInfo: document.querySelector('.country-info'),
+  searchForm: document.querySelector('.search-form'),
+  gallery: document.querySelector('.gallery'),
 };
 
-refs.input.addEventListener('input', debounce(onInput, DEBOUNCE_DELAY));
+refs.searchForm.addEventListener('submit', onSubmitButton);
 
-function onInput(e) {
-  const searchQuery = e.target.value.trim();
+function onSubmitButton(e) {
+  e.preventDefault();
 
-  if (searchQuery === '') {
-    clearMarkup();
-    return;
-  }
+  const searchQuery = e.currentTarget.elements.searchQuery.value.trim();
 
-  fetchCountries(searchQuery)
+  clearMarkup();
+
+  fatchImages(searchQuery)
     .then(data => {
-      if (data.length > 10) {
-        clearMarkup();
-        Notiflix.Notify.info(
-          'Too many matches found. Please enter a more specific name.'
+      if (data.totalHits === 0) {
+        Notiflix.Notify.failure(
+          'Sorry, there are no images matching your search query. Please try again.'
         );
-      } else if (data.length >= 2 && data.length <= 10) {
-        clearMarkup();
-        createCountryListMarkup(data);
-      } else if (data.length === 1) {
-        clearMarkup();
-        createCountryInfoMarkup(data);
+      } else {
+        return data.hits;
       }
     })
-    .catch(error =>
-      Notiflix.Notify.failure('Ooops, there is no contry with that name')
-    );
+    .then(searchQuery => {
+      createGalleryCardMarkup(searchQuery);
+    });
 }
 
 function clearMarkup() {
-  refs.countryList.innerHTML = '';
-  refs.countryInfo.innerHTML = '';
+  refs.gallery.innerHTML = '';
 }
 
-function createCountryListMarkup(countrys) {
-  const markup = countrys
+function createGalleryCardMarkup(searchQuery) {
+  const markup = searchQuery
     .map(
-      ({ flags, name }) =>
+      ({
+        webformatURL,
+        largeImageURL,
+        tags,
+        likes,
+        views,
+        comments,
+        downloads,
+      }) =>
         `
-        <li class="country-list-item">
-          <img src="${flags.svg}" alt="flag">
-          <p>${name.official}</p>
-        </li>
-        `
+          <div class="photo-card">
+            <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+            <div class="info">
+              <p class="info-item">
+                <b>Likes</b> </br>${likes}
+              </p>
+              <p class="info-item">
+                <b>Views</b> </br>${views}
+              </p>
+              <p class="info-item">
+                <b>Comments</b> </br>${comments}
+              </p>
+              <p class="info-item">
+                <b>Downloads</b> </br>${downloads}
+              </p>
+            </div>
+          </div>
+          `
     )
     .join('');
-  refs.countryList.insertAdjacentHTML('beforeend', markup);
+
+  refs.gallery.insertAdjacentHTML('beforeend', markup);
 }
 
-function createCountryInfoMarkup(countrys) {
-  const markup = countrys
-    .map(
-      ({ flags, name, capital, population, languages }) =>
-        `
-        <div class="country-name">
-          <img src="${flags.svg}" alt="flag" />
-          <span>${name.official}</span>
-        </div>
-        <div class="capital"><span>Capital:</span> ${capital}</div>
-        <div class="population"><span>Population: </span> ${population}</div>
-        <div class="languages"><span>Languages: </span> ${Object.values(
-          languages
-        )} </div>
-        `
-    )
-    .join('')
-    .replaceAll(',', ', ');
-  refs.countryInfo.insertAdjacentHTML('beforeend', markup);
-}
+// function onInput(e) {
+//   const searchQuery = e.target.value.trim();
+
+//   if (searchQuery === '') {
+//     clearMarkup();
+//     return;
+//   }
+
+//   fetchCountriesAndUpdateUi(searchQuery);
+// }
+
+// async function fetchCountriesAndUpdateUi(searchQuery) {
+//   try {
+//     const data = await fetchCountries(searchQuery);
+
+//     if (data.length > 10) {
+//       clearMarkup();
+//       Notiflix.Notify.info(
+//         'Too many matches found. Please enter a more specific name.'
+//       );
+//     } else if (data.length >= 2 && data.length <= 10) {
+//       clearMarkup();
+//       createCountryListMarkup(data);
+//     } else if (data.length === 1) {
+//       clearMarkup();
+//       createCountryInfoMarkup(data);
+//     }
+//   } catch (error) {
+//     Notiflix.Notify.failure('Ooops, there is no contry with that name');
+//   }
+// }
