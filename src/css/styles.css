@@ -26,7 +26,6 @@ p {
 
 img {
   display: block;
-  margin-right: 10px;
   width: 100%;
   height: auto;
 }
@@ -53,8 +52,6 @@ img {
 }
 
 input[type='text'] {
-  /* border-radius: 5px 0 0 5px; */
-
   display: block;
   height: 100%;
   flex-grow: 1;
@@ -86,8 +83,7 @@ button[type='submit'] {
 
   outline: none;
 
-  transition: border-color 250ms cubic-bezier(0.4, 0, 0.2, 1),
-    background-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 button[type='submit']:hover {
@@ -120,10 +116,14 @@ button[type='submit']:hover {
     0px 2px 1px rgb(0 0 0 / 20%);
 }
 
+.photo-card a {
+  width: 100%;
+}
+
 .photo-card img {
   height: 270px;
+
   object-fit: cover;
-  margin: 0;
 }
 
 .info {
@@ -137,4 +137,32 @@ button[type='submit']:hover {
 
 .info-item {
   text-align: center;
+}
+
+.load-more {
+  display: block;
+  height: 40px;
+  width: 100px;
+  margin-right: auto;
+  margin-left: auto;
+  padding: 0;
+  margin-bottom: 20px;
+
+  color: #fafafa;
+
+  border: 1px solid rgba(33, 33, 33, 0.2);
+  border-radius: 4px;
+  background-color: #4c66d6;
+
+  outline: none;
+
+  transition: background-color 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.load-more:hover {
+  background-color: #4056b4;
+}
+
+.load-more.is-hiden {
+  display: none;
 }

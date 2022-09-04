@@ -1,43 +1,131 @@
 import './css/styles.css';
-import axios from 'axios';
 import Notiflix from 'notiflix';
-import fatchImages from './fetchImages';
+import SimpleLightbox from 'simplelightbox';
+import 'simplelightbox/dist/simple-lightbox.min.css';
+import PixabayApiService from './pixabay-service';
 
 const refs = {
   searchForm: document.querySelector('.search-form'),
   gallery: document.querySelector('.gallery'),
+  loadMoreBtn: document.querySelector('.load-more'),
 };
 
+const pixabayApiService = new PixabayApiService();
+
 refs.searchForm.addEventListener('submit', onSubmitButton);
+refs.loadMoreBtn.addEventListener('click', onLoadMoreBtn);
 
 function onSubmitButton(e) {
   e.preventDefault();
 
-  const searchQuery = e.currentTarget.elements.searchQuery.value.trim();
+  pixabayApiService.query = e.currentTarget.elements.searchQuery.value.trim();
+  pixabayApiService.resetPage();
 
-  clearMarkup();
+  if (pixabayApiService.query === '') {
+    return;
+  }
+  fetchAfterSubmit();
+  // pixabayApiService
+  //   .fatchImages()
+  //   .then(data => {
+  //     if (data.totalHits < 40) {
+  //       loadMoreBtnHiden();
+  //     } else {
+  //       loadMoreBtnShow();
+  //     }
 
-  fatchImages(searchQuery)
-    .then(data => {
-      if (data.totalHits === 0) {
-        Notiflix.Notify.failure(
-          'Sorry, there are no images matching your search query. Please try again.'
-        );
-      } else {
-        return data.hits;
-      }
-    })
-    .then(searchQuery => {
-      createGalleryCardMarkup(searchQuery);
-    });
+  //     if (data.totalHits === 0) {
+  //       Notiflix.Notify.failure(
+  //         'Sorry, there are no images matching your search query. Please try again.'
+  //       );
+  //     }
+  //     return data.hits;
+  //   })
+  //   .then(searchQuery => {
+  //     clearMarkup();
+
+  //     appendGaleryCardsMarkup(searchQuery);
+  //     lightboxOn();
+  //   })
+  //   .catch(e => {
+  //     return;
+  //   });
 }
 
-function clearMarkup() {
-  refs.gallery.innerHTML = '';
+async function fetchAfterSubmit() {
+  try {
+    const responseData = await pixabayApiService.fatchImages();
+    if (responseData.totalHits < 40) {
+      loadMoreBtnHiden();
+    } else {
+      loadMoreBtnShow();
+    }
+
+    if (responseData.totalHits === 0) {
+      Notiflix.Notify.failure(
+        'Sorry, there are no images matching your search query. Please try again.'
+      );
+    } else if (responseData.totalHits > 0) {
+      Notiflix.Notify.success(
+        `Hooray! We found ${responseData.totalHits} images.`
+      );
+    }
+
+    const responseDataArr = await responseData.hits;
+    clearMarkup();
+
+    appendGaleryCardsMarkup(responseDataArr);
+    lightboxOn();
+  } catch (error) {
+    return;
+  }
 }
 
-function createGalleryCardMarkup(searchQuery) {
-  const markup = searchQuery
+async function onLoadMoreBtn() {
+  const responseData = await pixabayApiService.fatchImages();
+
+  if (responseData.hits.length < 40) {
+    loadMoreBtnHiden();
+    Notiflix.Notify.failure(
+      "We're sorry, but you've reached the end of search results."
+    );
+  } else if (pixabayApiService.totalCards > 0) {
+    Notiflix.Notify.success(
+      `Hooray! We found ${pixabayApiService.totalCards} images.`
+    );
+  }
+
+  const responseDataArr = await responseData.hits;
+  appendGaleryCardsMarkup(responseDataArr);
+  lightboxOn();
+
+  // pixabayApiService
+  //   .fatchImages()
+  //   .then(data => {
+  //     if (data.hits.length < 40) {
+  //       loadMoreBtnHiden();
+  //       Notiflix.Notify.failure(
+  //         "We're sorry, but you've reached the end of search results."
+  //       );
+  //     }
+  //     return data.hits;
+  //   })
+  //   .then(data => {
+  //     appendGaleryCardsMarkup(data);
+  //     lightboxOn();
+  //   })
+  //   .catch();
+}
+
+function appendGaleryCardsMarkup(searchQueryData) {
+  refs.gallery.insertAdjacentHTML(
+    'beforeend',
+    galleryCardTemplate(searchQueryData)
+  );
+}
+
+function galleryCardTemplate(data) {
+  const markup = data
     .map(
       ({
         webformatURL,
@@ -50,7 +138,9 @@ function createGalleryCardMarkup(searchQuery) {
       }) =>
         `
           <div class="photo-card">
-            <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+            <a href="${largeImageURL}">
+              <img src="${webformatURL}" alt="${tags}" loading="lazy" />
+            </a>
             <div class="info">
               <p class="info-item">
                 <b>Likes</b> </br>${likes}
@@ -69,38 +159,25 @@ function createGalleryCardMarkup(searchQuery) {
           `
     )
     .join('');
-
-  refs.gallery.insertAdjacentHTML('beforeend', markup);
+  return markup;
 }
 
-// function onInput(e) {
-//   const searchQuery = e.target.value.trim();
+function clearMarkup() {
+  refs.gallery.innerHTML = '';
+}
 
-//   if (searchQuery === '') {
-//     clearMarkup();
-//     return;
-//   }
+function loadMoreBtnShow() {
+  refs.loadMoreBtn.classList.remove('is-hiden');
+}
 
-//   fetchCountriesAndUpdateUi(searchQuery);
-// }
+function loadMoreBtnHiden() {
+  refs.loadMoreBtn.classList.add('is-hiden');
+}
 
-// async function fetchCountriesAndUpdateUi(searchQuery) {
-//   try {
-//     const data = await fetchCountries(searchQuery);
-
-//     if (data.length > 10) {
-//       clearMarkup();
-//       Notiflix.Notify.info(
-//         'Too many matches found. Please enter a more specific name.'
-//       );
-//     } else if (data.length >= 2 && data.length <= 10) {
-//       clearMarkup();
-//       createCountryListMarkup(data);
-//     } else if (data.length === 1) {
-//       clearMarkup();
-//       createCountryInfoMarkup(data);
-//     }
-//   } catch (error) {
-//     Notiflix.Notify.failure('Ooops, there is no contry with that name');
-//   }
-// }
+function lightboxOn() {
+  const lightbox = new SimpleLightbox('.gallery a', {
+    // captionType: 'attr',
+    // captionsData: 'alt',
+    animationSpeed: 250,
+  });
+}
