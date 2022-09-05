@@ -30,6 +30,7 @@ function onSubmitButton(e) {
 async function fetchAfterSubmit() {
   try {
     const responseData = await pixabayApiService.fatchImages();
+
     if (responseData.totalHits < 40) {
       loadMoreBtnHiden();
     } else {
@@ -51,6 +52,7 @@ async function fetchAfterSubmit() {
 
     appendGaleryCardsMarkup(responseDataArr);
     lightboxOn();
+    scrollToStart();
   } catch (error) {
     return;
   }
@@ -73,6 +75,7 @@ async function onLoadMoreBtn() {
   const responseDataArr = await responseData.hits;
   appendGaleryCardsMarkup(responseDataArr);
   lightboxOn();
+  scrollToEnd();
 }
 
 function appendGaleryCardsMarkup(searchQueryData) {
@@ -137,5 +140,23 @@ function lightboxOn() {
     // captionType: 'attr',
     // captionsData: 'alt',
     animationSpeed: 250,
+  });
+}
+
+function scrollToEnd() {
+  const { height: cardHeight } = document
+    .querySelector('.gallery')
+    .firstElementChild.getBoundingClientRect();
+
+  window.scrollBy({
+    top: cardHeight * 2,
+    behavior: 'smooth',
+  });
+}
+
+function scrollToStart() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth',
   });
 }
