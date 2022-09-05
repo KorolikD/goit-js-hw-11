@@ -9,7 +9,6 @@ export default class PixabayApiService {
   }
 
   async fatchImages() {
-    const axios = require('axios');
     const KEY = '29563680-7212c18ac3d60535e0c53b281';
     const url = 'https://pixabay.com/api/';
     const paramsOfResponse = `?key=${KEY}&q=${this.searchQuery}&image_type=photo&orientation=horizontal&safesearch=true&page=${this.page}&per_page=${this.limit}`;

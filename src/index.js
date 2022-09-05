@@ -25,31 +25,6 @@ function onSubmitButton(e) {
     return;
   }
   fetchAfterSubmit();
-  // pixabayApiService
-  //   .fatchImages()
-  //   .then(data => {
-  //     if (data.totalHits < 40) {
-  //       loadMoreBtnHiden();
-  //     } else {
-  //       loadMoreBtnShow();
-  //     }
-
-  //     if (data.totalHits === 0) {
-  //       Notiflix.Notify.failure(
-  //         'Sorry, there are no images matching your search query. Please try again.'
-  //       );
-  //     }
-  //     return data.hits;
-  //   })
-  //   .then(searchQuery => {
-  //     clearMarkup();
-
-  //     appendGaleryCardsMarkup(searchQuery);
-  //     lightboxOn();
-  //   })
-  //   .catch(e => {
-  //     return;
-  //   });
 }
 
 async function fetchAfterSubmit() {
@@ -98,23 +73,6 @@ async function onLoadMoreBtn() {
   const responseDataArr = await responseData.hits;
   appendGaleryCardsMarkup(responseDataArr);
   lightboxOn();
-
-  // pixabayApiService
-  //   .fatchImages()
-  //   .then(data => {
-  //     if (data.hits.length < 40) {
-  //       loadMoreBtnHiden();
-  //       Notiflix.Notify.failure(
-  //         "We're sorry, but you've reached the end of search results."
-  //       );
-  //     }
-  //     return data.hits;
-  //   })
-  //   .then(data => {
-  //     appendGaleryCardsMarkup(data);
-  //     lightboxOn();
-  //   })
-  //   .catch();
 }
 
 function appendGaleryCardsMarkup(searchQueryData) {
