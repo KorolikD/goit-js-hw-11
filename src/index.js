@@ -68,7 +68,7 @@ async function onLoadMoreBtn() {
     );
   } else if (pixabayApiService.totalCards > 0) {
     Notiflix.Notify.success(
-      `Hooray! We found ${pixabayApiService.totalCards} images.`
+      `You can load ${pixabayApiService.totalCards} images.`
     );
   }
 
